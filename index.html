@@ -12,8 +12,8 @@
 <title>PocketCode — XML & Code Editor</title>
 <style>
 :root{color-scheme:dark;--bg:#17191d;--panel:#22252b;--panel2:#2b2f36;--text:#e8eaf0;--muted:#9aa1ad;--accent:#ff9d45;--line:#343943;--editor:#17191d}
-*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overscroll-behavior:none}
-body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;height:100%;background:var(--bg);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+body{display:flex;flex-direction:column;min-height:100svh;height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);overflow:hidden}
 header{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:var(--panel);border-bottom:1px solid var(--line);flex-shrink:0}
 .brand{font-weight:750;letter-spacing:.2px}.brand span{color:var(--accent)}.status{font-size:11px;color:var(--muted)}
 .toolbar{display:flex;gap:7px;padding:9px 10px;background:var(--panel);overflow-x:auto;border-bottom:1px solid var(--line);flex-shrink:0}
@@ -24,17 +24,27 @@ button:active{opacity:.7}input[type=file]{display:none}
 .tab{border:0;border-radius:8px 8px 0 0;background:transparent;color:var(--muted);padding:8px 12px;max-width:180px;overflow:hidden;text-overflow:ellipsis}
 .tab.active{background:var(--editor);color:var(--text);border-top:2px solid var(--accent)}
 .editor-wrap{display:flex;flex:1;min-height:0;position:relative;background:var(--editor)}
-.gutter{width:42px;overflow:hidden;padding:14px 7px 20px 0;text-align:right;color:#69717e;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;user-select:none;border-right:1px solid #292d34}
+.gutter{width:42px;overflow:hidden;padding:14px 7px 20px 0;text-align:right;color:#69717e;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;user-select:none;border-right:1px solid #292d34}
 .editarea{position:relative;flex:1;min-width:0;overflow:hidden}
-#code{position:absolute;inset:0;width:100%;height:100%;resize:none;border:0;outline:0;background:transparent;color:var(--text);caret-color:var(--accent);padding:14px 13px 30px;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;overflow:auto;tab-size:2;-webkit-overflow-scrolling:touch}
-#highlight{position:absolute;inset:0;pointer-events:none;overflow:hidden;padding:14px 13px 30px;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;tab-size:2;color:var(--text)}
+#code{position:absolute;inset:0;width:100%;height:100%;resize:none;border:0;outline:0;background:transparent;color:var(--text);caret-color:var(--accent);padding:14px 13px 30px;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;overflow:auto;tab-size:2;-webkit-overflow-scrolling:touch}
+#highlight{position:absolute;inset:0;pointer-events:none;overflow:hidden;padding:14px 13px 30px;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;tab-size:2;color:var(--text)}
 .editarea.highlighting #code{color:transparent;-webkit-text-fill-color:transparent}
 .editarea.highlighting #code::selection{background:#53657d88}
 .t-tag{color:#78b7ff}.t-attr{color:#d7a6ff}.t-string{color:#a8d88d}.t-comment{color:#77818f}.t-punct{color:#ffbd75}.t-decl{color:#e6bd78}
 footer{height:31px;display:flex;align-items:center;justify-content:space-between;padding:0 11px;background:var(--panel);border-top:1px solid var(--line);font-size:11px;color:var(--muted);flex-shrink:0}
-.drawer{display:none;position:absolute;z-index:5;inset:0;background:#0009;align-items:flex-end}.drawer.open{display:flex}.sheet{background:var(--panel);width:100%;padding:17px;border-radius:18px 18px 0 0;max-height:75%;overflow:auto}.sheet h3{margin:0 0 12px}.field{display:flex;gap:8px;margin:9px 0}.field input{min-width:0;flex:1;background:var(--editor);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}
+.drawer{display:none;position:absolute;z-index:5;inset:0;background:#0009;align-items:flex-end}.drawer.open{display:flex}.sheet{background:var(--panel);width:100%;padding:17px;border-radius:18px 18px 0 0;max-height:75%;overflow:auto}.sheet h3{margin:0 0 12px}.field{display:flex;gap:8px;margin:9px 0}.field input{min-width:0;flex:1;background:var(--editor);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:16px}
 #toast{position:fixed;bottom:48px;left:50%;transform:translateX(-50%);background:#30343c;padding:10px 15px;border-radius:10px;font-size:13px;display:none;z-index:10;box-shadow:0 5px 25px #0008}
 .light{--bg:#f3f4f6;--panel:#e5e7eb;--panel2:#fff;--text:#20242b;--muted:#656d78;--line:#cbd0d8;--editor:#fff}
+@media(max-width:600px){
+ header{height:50px;padding:0 11px}
+ .toolbar{gap:6px;padding:8px;scrollbar-width:none}
+ .toolbar button,.toolbar .filebtn{padding:10px 11px;font-size:14px}
+ .tabs{min-height:40px}
+ .editor-wrap{min-height:0;flex:1}
+ .gutter{font-size:14px;line-height:1.5;width:38px}
+ #code,#highlight{font-size:16px;line-height:1.5}
+ footer{height:30px}
+}
 @media(min-width:700px){body{max-width:1000px;margin:auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}}
 </style>
 </head>
