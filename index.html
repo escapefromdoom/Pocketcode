@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#202124">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PocketCode">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>PocketCode — XML & Code Editor</title>
+<style>
+:root{color-scheme:dark;--bg:#17191d;--panel:#22252b;--panel2:#2b2f36;--text:#e8eaf0;--muted:#9aa1ad;--accent:#ff9d45;--line:#343943;--editor:#17191d}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;height:100%;background:var(--bg);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overscroll-behavior:none;-webkit-text-size-adjust:100%}
+body{display:flex;flex-direction:column;min-height:100svh;height:100dvh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);overflow:hidden}
+header{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 13px;background:var(--panel);border-bottom:1px solid var(--line);flex-shrink:0}
+.brand{font-weight:750;letter-spacing:.2px}.brand span{color:var(--accent)}.status{font-size:11px;color:var(--muted)}
+.toolbar{display:flex;gap:7px;padding:9px 10px;background:var(--panel);overflow-x:auto;border-bottom:1px solid var(--line);flex-shrink:0}
+button,.filebtn{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:9px;padding:9px 12px;font-size:13px;white-space:nowrap}
+button.primary{background:var(--accent);border-color:var(--accent);color:#1d1d1d;font-weight:700}
+button:active{opacity:.7}input[type=file]{display:none}
+.tabs{display:flex;gap:2px;padding:6px 8px 0;background:var(--panel);overflow-x:auto;min-height:39px;flex-shrink:0}
+.tab{border:0;border-radius:8px 8px 0 0;background:transparent;color:var(--muted);padding:8px 12px;max-width:180px;overflow:hidden;text-overflow:ellipsis}
+.tab.active{background:var(--editor);color:var(--text);border-top:2px solid var(--accent)}
+.editor-wrap{display:flex;flex:1;min-height:0;position:relative;background:var(--editor)}
+.gutter{width:42px;overflow:hidden;padding:14px 7px 20px 0;text-align:right;color:#69717e;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;user-select:none;border-right:1px solid #292d34}
+.editarea{position:relative;flex:1;min-width:0;overflow:hidden}
+#code{position:absolute;inset:0;width:100%;height:100%;resize:none;border:0;outline:0;background:transparent;color:var(--text);caret-color:var(--accent);padding:14px 13px 30px;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;overflow:auto;tab-size:2;-webkit-overflow-scrolling:touch}
+#highlight{position:absolute;inset:0;pointer-events:none;overflow:hidden;padding:14px 13px 30px;font:16px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;tab-size:2;color:var(--text)}
+.editarea.highlighting #code{color:transparent;-webkit-text-fill-color:transparent}
+.editarea.highlighting #code::selection{background:#53657d88}
+.t-tag{color:#78b7ff}.t-attr{color:#d7a6ff}.t-string{color:#a8d88d}.t-comment{color:#77818f}.t-punct{color:#ffbd75}.t-decl{color:#e6bd78}
+footer{height:31px;display:flex;align-items:center;justify-content:space-between;padding:0 11px;background:var(--panel);border-top:1px solid var(--line);font-size:11px;color:var(--muted);flex-shrink:0}
+.drawer{display:none;position:absolute;z-index:5;inset:0;background:#0009;align-items:flex-end}.drawer.open{display:flex}.sheet{background:var(--panel);width:100%;padding:17px;border-radius:18px 18px 0 0;max-height:75%;overflow:auto}.sheet h3{margin:0 0 12px}.field{display:flex;gap:8px;margin:9px 0}.field input{min-width:0;flex:1;background:var(--editor);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:16px}
+#toast{position:fixed;bottom:48px;left:50%;transform:translateX(-50%);background:#30343c;padding:10px 15px;border-radius:10px;font-size:13px;display:none;z-index:10;box-shadow:0 5px 25px #0008}
+.light{--bg:#f3f4f6;--panel:#e5e7eb;--panel2:#fff;--text:#20242b;--muted:#656d78;--line:#cbd0d8;--editor:#fff}
+@media(max-width:600px){
+ header{height:50px;padding:0 11px}
+ .toolbar{gap:6px;padding:8px;scrollbar-width:none}
+ .toolbar button,.toolbar .filebtn{padding:10px 11px;font-size:14px}
+ .tabs{min-height:40px}
+ .editor-wrap{min-height:0;flex:1}
+ .gutter{font-size:14px;line-height:1.5;width:38px}
+ #code,#highlight{font-size:16px;line-height:1.5}
+ footer{height:30px}
+}
+@media(min-width:700px){body{max-width:1000px;margin:auto;border-left:1px solid var(--line);border-right:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header><div class="brand">Pocket<span>Code</span></div><div class="status" id="saveState">Ready</div></header>
+<div class="toolbar">
+<label class="filebtn" for="fileInput">Open file</label><input id="fileInput" type="file" accept=".xml,.txt,.json,.html,.css,.js,.yml,.yaml,.cfg,.md,*/*">
+<button class="primary" id="saveBtn">Save / Export</button>
+<button id="newBtn">New</button><button id="findBtn">Find</button><button id="formatBtn">Format XML</button><button id="themeBtn">Light / Dark</button>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="editor-wrap"><div class="gutter" id="gutter">1</div><div class="editarea highlighting" id="editarea"><pre id="highlight" aria-hidden="true"></pre><textarea id="code" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" wrap="off" aria-label="Code editor"></textarea></div></div>
+<footer><span id="language">XML</span><span id="position">Ln 1, Col 1</span><span id="count">0 chars</span></footer>
+<div class="drawer" id="drawer"><div class="sheet"><h3 id="drawerTitle">Find & Replace</h3><div class="field"><input id="findText" placeholder="Find text"></div><div class="field"><input id="replaceText" placeholder="Replace with (optional)"></div><div class="field"><button id="findNext">Find next</button><button id="replaceOne">Replace</button><button id="replaceAll">Replace all</button><button id="closeDrawer">Close</button></div></div></div>
+<div id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);let docs=[],active=0,dirty=false,searchAt=0;
+const starter=`<?xml version="1.0" encoding="UTF-8"?>
+<!-- Open an XML file or start typing -->
+<root>
+  <example enabled="true">
+    <message>Hello from PocketCode</message>
+  </example>
+</root>`;
+function doc(name,content){return {name,content}}
+function current(){return docs[active]}
+function toast(s){let t=$('toast');t.textContent=s;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2200)}
+function escapeHTML(s){return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;')}
+function highlight(s){
+ let out='',i=0;const re=/<!--[\s\S]*?-->|<\?[\s\S]*?\?>|<\/?[A-Za-z_:][^>]*?>/g;let m;
+ while((m=re.exec(s))){out+=escapeHTML(s.slice(i,m.index));let x=m[0];
+ if(x.startsWith('<!--'))out+='<span class="t-comment">'+escapeHTML(x)+'</span>';
+ else if(x.startsWith('<?'))out+='<span class="t-decl">'+escapeHTML(x)+'</span>';
+ else {let y=escapeHTML(x).replace(/(&lt;\/?)([\w:.-]+)/g,'$1<span class="t-tag">$2</span>').replace(/([\w:.-]+)(=)/g,'<span class="t-attr">$1</span>$2').replace(/(&quot;.*?&quot;|&#39;.*?&#39;)/g,'<span class="t-string">$1</span>').replace(/([=\/])/g,'<span class="t-punct">$1</span>');out+=y}
+ i=re.lastIndex}
+ out+=escapeHTML(s.slice(i));return out+'\n'
+}
+function render(){
+ $('tabs').innerHTML='';docs.forEach((d,i)=>{let b=document.createElement('button');b.className='tab'+(i===active?' active':'');b.textContent=d.name+(d.dirty?' •':'');b.onclick=()=>switchDoc(i);$('tabs').append(b)});
+ $('code').value=current().content;$('highlight').innerHTML=highlight(current().content);sync();
+ $('language').textContent=(current().name.split('.').pop()||'TEXT').toUpperCase();$('saveState').textContent=current().dirty?'Unsaved changes':'Saved locally'
+}
+function switchDoc(i){active=i;render()}
+function sync(){let c=$('code'),v=c.value;let lines=v.split('\n').length;$('gutter').textContent=Array.from({length:lines},(_,i)=>i+1).join('\n');$('highlight').scrollTop=c.scrollTop;$('highlight').scrollLeft=c.scrollLeft;$('gutter').scrollTop=c.scrollTop;$('position').textContent=`Ln ${v.slice(0,c.selectionStart).split('\n').length}, Col ${(c.selectionStart-(v.lastIndexOf('\n',c.selectionStart-1)+1))+1}`;$('count').textContent=v.length+' chars'}
+$('code').addEventListener('input',()=>{current().content=$('code').value;current().dirty=true;current().saved=false;$('highlight').innerHTML=highlight(current().content);$('tabs').children[active].textContent=current().name+' •';sync();$('saveState').textContent='Unsaved changes'});
+$('code').addEventListener('scroll',sync);$('code').addEventListener('click',sync);$('code').addEventListener('keyup',sync);
+$('code').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();let a=e.target.selectionStart,b=e.target.selectionEnd;e.target.setRangeText('  ',a,b,'end');e.target.dispatchEvent(new Event('input'))}if(e.key==='Enter'){let p=e.target.selectionStart,prev=e.target.value.slice(0,p).split('\n').pop(),indent=(prev.match(/^\s*/)||[''])[0];if(/<[^/!?][^>]*>$/.test(prev)&&!prev.includes('</'))indent+='  ';setTimeout(()=>{e.target.setRangeText(indent,e.target.selectionStart,e.target.selectionEnd,'end');e.target.dispatchEvent(new Event('input'))},0)}});
+$('fileInput').onchange=async e=>{let f=e.target.files[0];if(!f)return;let content=await f.text();docs.push(doc(f.name,content));active=docs.length-1;render();toast('Opened '+f.name);e.target.value=''};
+function download(){let d=current(),blob=new Blob([d.content],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=d.name;a.click();URL.revokeObjectURL(url);d.dirty=false;render();toast('Exported '+d.name)}
+$('saveBtn').onclick=download;
+$('newBtn').onclick=()=>{let n=prompt('File name','untitled.xml');if(n){docs.push(doc(n,''));active=docs.length-1;render();$('code').focus()}};
+$('findBtn').onclick=()=>{$('drawer').classList.add('open');$('findText').focus()};
+$('closeDrawer').onclick=()=>$('drawer').classList.remove('open');
+function findNext(){let q=$('findText').value;if(!q)return;let c=$('code'),v=c.value,p=v.indexOf(q,Math.max(c.selectionEnd,searchAt));if(p<0)p=v.indexOf(q);if(p<0){toast('No match found');return}c.focus();c.setSelectionRange(p,p+q.length);searchAt=p+q.length;sync()}
+$('findNext').onclick=findNext;
+$('replaceOne').onclick=()=>{let q=$('findText').value,r=$('replaceText').value,c=$('code');if(!q)return;if(c.selectionStart!==c.selectionEnd&&c.value.slice(c.selectionStart,c.selectionEnd)===q){c.setRangeText(r,c.selectionStart,c.selectionEnd,'end');c.dispatchEvent(new Event('input'))}else findNext()};
+$('replaceAll').onclick=()=>{let q=$('findText').value;if(!q)return;let c=$('code');c.value=c.value.split(q).join($('replaceText').value);c.dispatchEvent(new Event('input'));toast('Replaced all matches')};
+$('formatBtn').onclick=()=>{let s=$('code').value;try{let xml=new DOMParser().parseFromString(s,'application/xml');if(xml.querySelector('parsererror'))throw Error('Invalid XML');let raw=new XMLSerializer().serializeToString(xml),formatted='',depth=0;raw=raw.replace(/>\s*</g,'><');let tokens=raw.match(/<[^>]+>|[^<]+/g)||[];tokens.forEach(t=>{if(/^<\//.test(t))depth=Math.max(0,depth-1);formatted+='  '.repeat(depth)+t.trim()+'\n';if(/^<[^!?/][^>]*[^/]?>$/.test(t)&&!/^<[^>]+\/>$/.test(t)&&!t.includes('</'))depth++});$('code').value=formatted.trim();$('code').dispatchEvent(new Event('input'));toast('XML formatted')}catch(e){toast('Could not format: check XML syntax')}};
+$('themeBtn').onclick=()=>$('body').classList.toggle('light');
+docs=[doc('untitled.xml',starter)];render();
+if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
